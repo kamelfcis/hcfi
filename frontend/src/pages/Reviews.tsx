@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
-import { Eye, CheckCircle, XCircle, Search, Filter, Clock, FileText, AlertCircle } from 'lucide-react';
+import { Eye, CheckCircle, Search, Filter, Clock, FileText, AlertCircle } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface Correspondence {

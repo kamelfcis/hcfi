@@ -12,7 +12,7 @@ import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'react-toastify';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 
 const correspondenceSchema = z.object({
   type: z.enum(['incoming', 'outgoing']),

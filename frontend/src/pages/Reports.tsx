@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
-import { BarChart3, FileText, TrendingUp, Clock, CheckCircle, XCircle, Download, FileSpreadsheet } from 'lucide-react';
+import { BarChart3, FileText, TrendingUp, Clock, CheckCircle, FileSpreadsheet } from 'lucide-react';
 
 interface Stats {
   totalCorrespondences: number;

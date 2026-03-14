@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import { Shield, Star, Eye, EyeOff, Lock, User, LogIn, Rocket } from 'lucide-react';
 import logoImage from '../../../logo.png';
