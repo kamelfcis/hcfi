@@ -266,7 +266,18 @@ export default function Users() {
       )}
 
       <UserModal
-        user={selectedUser}
+        user={
+          selectedUser
+            ? {
+                id: selectedUser.id,
+                username: selectedUser.username,
+                email: selectedUser.email,
+                full_name_ar: selectedUser.full_name_ar,
+                role_id: selectedUser.role?.id ?? 3,
+                is_active: selectedUser.is_active,
+              }
+            : null
+        }
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);

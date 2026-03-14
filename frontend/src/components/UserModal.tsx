@@ -177,7 +177,7 @@ export default function UserModal({ user, isOpen, onClose, onSuccess }: UserModa
             <div>
               <label className="mb-2 block text-sm font-medium">الحالة</label>
               <Select
-                {...register('is_active', { valueAsBoolean: true })}
+                {...register('is_active')}
                 onChange={(e) => setValue('is_active', e.target.value === 'true')}
               >
                 <option value="true">نشط</option>

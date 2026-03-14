@@ -183,7 +183,7 @@ export default function AttachmentViewer({
             const renderDoc = async () => {
               if (wordContainerRef.current) {
                 wordContainerRef.current.innerHTML = '';
-                await renderAsync(arrayBuffer, wordContainerRef.current, null, {
+                await renderAsync(arrayBuffer, wordContainerRef.current, undefined, {
                   className: 'docx-wrapper',
                   inWrapper: true,
                   ignoreWidth: false,

@@ -151,7 +151,7 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
             <div>
               <label className="mb-2 block text-sm font-medium">الحالة</label>
               <Select
-                {...register('is_active', { valueAsBoolean: true })}
+                {...register('is_active')}
                 onChange={(e) => setValue('is_active', e.target.value === 'true')}
               >
                 <option value="true">نشط</option>
