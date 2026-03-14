@@ -20,9 +20,9 @@ interface Correspondence {
   correspondence_date: string;
   current_status: string;
   review_status: string;
-  senderEntity: { name_ar: string; name_en: string };
-  receiverEntity: { name_ar: string; name_en: string };
-  creator: { full_name_ar: string; full_name_en: string };
+  senderEntity: { name_ar: string };
+  receiverEntity: { name_ar: string };
+  creator: { full_name_ar: string };
 }
 
 type ReviewTab = 'pending' | 'reviewed' | 'all';
@@ -334,15 +334,15 @@ export default function Reviews() {
                           <div className="mt-3 space-y-1">
                             <p className="text-sm text-muted-foreground">
                               <span className="font-medium">{i18n.language === 'ar' ? 'من:' : 'From:'}</span>{' '}
-                              {i18n.language === 'ar' ? corr.senderEntity.name_ar : corr.senderEntity.name_en}
+                              {corr.senderEntity.name_ar}
                               {' → '}
                               <span className="font-medium">{i18n.language === 'ar' ? 'إلى:' : 'To:'}</span>{' '}
-                              {i18n.language === 'ar' ? corr.receiverEntity.name_ar : corr.receiverEntity.name_en}
+                              {corr.receiverEntity.name_ar}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {i18n.language === 'ar' ? 'تاريخ:' : 'Date:'} {format(new Date(corr.correspondence_date), 'yyyy-MM-dd')}
                               {' • '}
-                              {i18n.language === 'ar' ? 'المنشئ:' : 'Created by:'} {i18n.language === 'ar' ? corr.creator.full_name_ar : corr.creator.full_name_en}
+                              المنشئ: {corr.creator.full_name_ar}
                             </p>
                           </div>
                         </div>

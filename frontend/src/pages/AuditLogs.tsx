@@ -23,7 +23,6 @@ interface AuditLog {
     id: number;
     username: string;
     full_name_ar: string;
-    full_name_en: string;
     email: string;
   };
 }
@@ -231,7 +230,7 @@ export default function AuditLogs() {
                             <div className="space-y-1">
                               <p className="text-sm">
                                 <span className="font-medium">{i18n.language === 'ar' ? 'المستخدم:' : 'User:'}</span>{' '}
-                                {i18n.language === 'ar' ? log.user.full_name_ar : log.user.full_name_en} ({log.user.username})
+                                {log.user.full_name_ar} ({log.user.username})
                               </p>
                               {log.details && (
                                 <p className="text-sm text-muted-foreground">

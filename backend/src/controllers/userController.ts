@@ -76,7 +76,6 @@ export const getAll = async (req: AuthRequest, res: Response, next: NextFunction
         { username: { [Op.like]: `%${search}%` } },
         { email: { [Op.like]: `%${search}%` } },
         { full_name_ar: { [Op.like]: `%${search}%` } },
-        { full_name_en: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -165,7 +164,6 @@ export const getById = async (req: AuthRequest, res: Response, next: NextFunctio
  *               - email
  *               - password
  *               - full_name_ar
- *               - full_name_en
  *               - role_id
  *             properties:
  *               username:
@@ -176,8 +174,6 @@ export const getById = async (req: AuthRequest, res: Response, next: NextFunctio
  *               password:
  *                 type: string
  *               full_name_ar:
- *                 type: string
- *               full_name_en:
  *                 type: string
  *               role_id:
  *                 type: integer
@@ -239,8 +235,6 @@ export const create = async (req: AuthRequest, res: Response, next: NextFunction
  *               password:
  *                 type: string
  *               full_name_ar:
- *                 type: string
- *               full_name_en:
  *                 type: string
  *               role_id:
  *                 type: integer

@@ -29,7 +29,7 @@ import { Op } from 'sequelize';
  *         name: type
  *         schema:
  *           type: string
- *           enum: [subsidiary, presidency, government, external]
+ *           enum: [قيادة_عامة, فرع_رئيسي, قيادة_استراتيجية, هيئة_رئيسية, إدارة_رئيسية, جهة_تابعة]
  *       - in: query
  *         name: is_active
  *         schema:
@@ -73,7 +73,6 @@ export const getAll = async (req: AuthRequest, res: Response, next: NextFunction
     if (search) {
       where[Op.or] = [
         { name_ar: { [Op.like]: `%${search}%` } },
-        { name_en: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -152,16 +151,13 @@ export const getById = async (req: AuthRequest, res: Response, next: NextFunctio
  *             type: object
  *             required:
  *               - name_ar
- *               - name_en
  *               - type
  *             properties:
  *               name_ar:
  *                 type: string
- *               name_en:
- *                 type: string
  *               type:
  *                 type: string
- *                 enum: [subsidiary, presidency, government, external]
+ *                 enum: [قيادة_عامة, فرع_رئيسي, قيادة_استراتيجية, هيئة_رئيسية, إدارة_رئيسية, جهة_تابعة]
  *               contact_person:
  *                 type: string
  *               contact_email:
@@ -211,11 +207,9 @@ export const create = async (req: AuthRequest, res: Response, next: NextFunction
  *             properties:
  *               name_ar:
  *                 type: string
- *               name_en:
- *                 type: string
  *               type:
  *                 type: string
- *                 enum: [subsidiary, presidency, government, external]
+ *                 enum: [قيادة_عامة, فرع_رئيسي, قيادة_استراتيجية, هيئة_رئيسية, إدارة_رئيسية, جهة_تابعة]
  *               contact_person:
  *                 type: string
  *               contact_email:

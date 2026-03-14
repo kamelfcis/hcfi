@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --JKqx2: #1e293b;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -27,25 +28,26 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Military olive/gold theme - dark mode */
+    --background: 120 30% 6%;
+    --foreground: 45 30% 85%;
+    --card: 120 25% 9%;
+    --card-foreground: 45 30% 85%;
+    --popover: 120 25% 9%;
+    --popover-foreground: 45 30% 85%;
+    --primary: 43 55% 55%;
+    --primary-foreground: 120 40% 8%;
+    --secondary: 120 20% 15%;
+    --secondary-foreground: 45 30% 85%;
+    --muted: 120 15% 15%;
+    --muted-foreground: 45 15% 55%;
+    --accent: 120 20% 15%;
+    --accent-foreground: 45 30% 85%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 15% 18%;
+    --input: 120 15% 18%;
+    --ring: 43 55% 50%;
   }
 }
 

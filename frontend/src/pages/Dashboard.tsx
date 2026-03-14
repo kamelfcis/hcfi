@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import {
   FileText,
   Inbox,
@@ -16,13 +14,13 @@ import {
   Calendar,
   TrendingUp,
   CheckCircle,
-  AlertCircle,
   FileCheck,
   MessageSquare,
   Archive,
   Activity,
   ArrowRight,
 } from 'lucide-react';
+import logoImage from '../../../logo.png';
 
 interface DashboardStats {
   totalCorrespondences: number;
@@ -61,25 +59,32 @@ export default function Dashboard() {
     };
 
     fetchStats();
-    // Refresh stats every 30 seconds
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  // Brand palette from logo
+  const gold = 'var(--JKqx2, #1e293b)';
+  const goldLight = '#f31415';
+  const goldDim = 'rgba(243, 20, 21, 0.6)';
+  const cardBg = 'rgba(201,168,76,0.04)';
+  const cardBorder = 'rgba(201,168,76,0.12)';
+  const cardHoverBg = 'rgba(201,168,76,0.08)';
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-10 w-64" style={{ background: 'rgba(201,168,76,0.1)' }} />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16" />
-              </CardContent>
-            </Card>
+            <div
+              key={i}
+              className="rounded-xl p-6"
+              style={{ background: cardBg, border: `1px solid ${cardBorder}` }}
+            >
+              <Skeleton className="h-4 w-24 mb-4" style={{ background: 'rgba(201,168,76,0.1)' }} />
+              <Skeleton className="h-8 w-16" style={{ background: 'rgba(201,168,76,0.1)' }} />
+            </div>
           ))}
         </div>
       </div>
@@ -87,22 +92,31 @@ export default function Dashboard() {
   }
 
   if (!stats) {
-    return <div>Failed to load dashboard</div>;
+    return (
+      <div className="flex items-center justify-center h-64 text-sm" style={{ color: goldDim }}>
+        Failed to load dashboard
+      </div>
+    );
   }
 
   const completionRate = stats.totalCorrespondences > 0
     ? ((stats.completedCount / stats.totalCorrespondences) * 100).toFixed(1)
     : '0';
 
+  const premiumCardThemes = [
+    { bg: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '#93c5fd', iconBg: '#bfdbfe', iconColor: '#1d4ed8', titleColor: '#1e3a8a', valueColor: '#0f172a', metaColor: '#1e40af', metaSubColor: '#334155' },
+    { bg: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)', border: '#67e8f9', iconBg: '#a5f3fc', iconColor: '#0e7490', titleColor: '#155e75', valueColor: '#0f172a', metaColor: '#0f766e', metaSubColor: '#334155' },
+    { bg: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', border: '#c4b5fd', iconBg: '#ddd6fe', iconColor: '#6d28d9', titleColor: '#5b21b6', valueColor: '#0f172a', metaColor: '#7c3aed', metaSubColor: '#334155' },
+    { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', border: '#fdba74', iconBg: '#fed7aa', iconColor: '#c2410c', titleColor: '#9a3412', valueColor: '#0f172a', metaColor: '#c2410c', metaSubColor: '#334155' },
+    { bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', border: '#86efac', iconBg: '#bbf7d0', iconColor: '#15803d', titleColor: '#166534', valueColor: '#0f172a', metaColor: '#15803d', metaSubColor: '#334155' },
+    { bg: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)', border: '#fde047', iconBg: '#fef08a', iconColor: '#a16207', titleColor: '#854d0e', valueColor: '#0f172a', metaColor: '#a16207', metaSubColor: '#334155' },
+  ];
+
   const statCards = [
     {
       title: t('dashboard.totalCorrespondences'),
       value: stats.totalCorrespondences,
       icon: FileText,
-      gradient: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-950',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      borderColor: 'border-blue-200 dark:border-blue-800',
       change: stats.thisMonthCount,
       changeLabel: t('dashboard.thisMonth'),
       link: '/incoming',
@@ -111,10 +125,6 @@ export default function Dashboard() {
       title: t('dashboard.incoming'),
       value: stats.incomingCount,
       icon: Inbox,
-      gradient: 'from-green-500 to-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-950',
-      iconColor: 'text-green-600 dark:text-green-400',
-      borderColor: 'border-green-200 dark:border-green-800',
       change: stats.incomingCount > 0 ? ((stats.incomingCount / stats.totalCorrespondences) * 100).toFixed(1) + '%' : '0%',
       changeLabel: i18n.language === 'ar' ? 'من الإجمالي' : 'of total',
       link: '/incoming',
@@ -123,10 +133,6 @@ export default function Dashboard() {
       title: t('dashboard.outgoing'),
       value: stats.outgoingCount,
       icon: Send,
-      gradient: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-950',
-      iconColor: 'text-purple-600 dark:text-purple-400',
-      borderColor: 'border-purple-200 dark:border-purple-800',
       change: stats.outgoingCount > 0 ? ((stats.outgoingCount / stats.totalCorrespondences) * 100).toFixed(1) + '%' : '0%',
       changeLabel: i18n.language === 'ar' ? 'من الإجمالي' : 'of total',
       link: '/outgoing',
@@ -135,10 +141,6 @@ export default function Dashboard() {
       title: t('dashboard.pendingReview'),
       value: stats.pendingReview,
       icon: Clock,
-      gradient: 'from-orange-500 to-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-950',
-      iconColor: 'text-orange-600 dark:text-orange-400',
-      borderColor: 'border-orange-200 dark:border-orange-800',
       change: stats.pendingReview,
       changeLabel: i18n.language === 'ar' ? 'في الانتظار' : 'pending',
       link: '/reviews',
@@ -147,10 +149,6 @@ export default function Dashboard() {
       title: t('dashboard.underReview'),
       value: stats.underReview,
       icon: Eye,
-      gradient: 'from-yellow-500 to-yellow-600',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-      iconColor: 'text-yellow-600 dark:text-yellow-400',
-      borderColor: 'border-yellow-200 dark:border-yellow-800',
       change: stats.underReview,
       changeLabel: i18n.language === 'ar' ? 'قيد المراجعة' : 'in review',
       link: '/reviews',
@@ -159,10 +157,6 @@ export default function Dashboard() {
       title: i18n.language === 'ar' ? 'مكتملة' : 'Completed',
       value: stats.completedCount,
       icon: CheckCircle,
-      gradient: 'from-emerald-500 to-emerald-600',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-950',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      borderColor: 'border-emerald-200 dark:border-emerald-800',
       change: completionRate + '%',
       changeLabel: i18n.language === 'ar' ? 'معدل الإنجاز' : 'completion rate',
       link: '/incoming?status=closed',
@@ -171,10 +165,6 @@ export default function Dashboard() {
       title: i18n.language === 'ar' ? 'مسودات' : 'Drafts',
       value: stats.draftCount,
       icon: FileCheck,
-      gradient: 'from-gray-500 to-gray-600',
-      bgColor: 'bg-gray-50 dark:bg-gray-950',
-      iconColor: 'text-gray-600 dark:text-gray-400',
-      borderColor: 'border-gray-200 dark:border-gray-800',
       change: stats.draftCount,
       changeLabel: i18n.language === 'ar' ? 'غير منشورة' : 'unpublished',
       link: '/incoming?status=draft',
@@ -183,10 +173,6 @@ export default function Dashboard() {
       title: i18n.language === 'ar' ? 'تم الرد عليها' : 'Replied',
       value: stats.repliedCount,
       icon: MessageSquare,
-      gradient: 'from-cyan-500 to-cyan-600',
-      bgColor: 'bg-cyan-50 dark:bg-cyan-950',
-      iconColor: 'text-cyan-600 dark:text-cyan-400',
-      borderColor: 'border-cyan-200 dark:border-cyan-800',
       change: stats.repliedCount,
       changeLabel: i18n.language === 'ar' ? 'مع ردود' : 'with replies',
       link: '/incoming?status=replied',
@@ -195,10 +181,6 @@ export default function Dashboard() {
       title: t('dashboard.totalEntities'),
       value: stats.totalEntities,
       icon: Building2,
-      gradient: 'from-indigo-500 to-indigo-600',
-      bgColor: 'bg-indigo-50 dark:bg-indigo-950',
-      iconColor: 'text-indigo-600 dark:text-indigo-400',
-      borderColor: 'border-indigo-200 dark:border-indigo-800',
       change: stats.totalEntities,
       changeLabel: i18n.language === 'ar' ? 'جهة نشطة' : 'active entities',
       link: '/entities',
@@ -207,10 +189,6 @@ export default function Dashboard() {
       title: t('dashboard.totalUsers'),
       value: stats.totalUsers,
       icon: Users,
-      gradient: 'from-pink-500 to-pink-600',
-      bgColor: 'bg-pink-50 dark:bg-pink-950',
-      iconColor: 'text-pink-600 dark:text-pink-400',
-      borderColor: 'border-pink-200 dark:border-pink-800',
       change: stats.totalUsers,
       changeLabel: i18n.language === 'ar' ? 'مستخدم نشط' : 'active users',
       link: '/users',
@@ -219,10 +197,6 @@ export default function Dashboard() {
       title: i18n.language === 'ar' ? 'هذا الأسبوع' : 'This Week',
       value: stats.thisWeekCount,
       icon: Calendar,
-      gradient: 'from-teal-500 to-teal-600',
-      bgColor: 'bg-teal-50 dark:bg-teal-950',
-      iconColor: 'text-teal-600 dark:text-teal-400',
-      borderColor: 'border-teal-200 dark:border-teal-800',
       change: stats.thisWeekCount,
       changeLabel: i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences',
       link: '/incoming',
@@ -231,206 +205,301 @@ export default function Dashboard() {
       title: i18n.language === 'ar' ? 'اليوم' : 'Today',
       value: stats.todayCount,
       icon: Activity,
-      gradient: 'from-rose-500 to-rose-600',
-      bgColor: 'bg-rose-50 dark:bg-rose-950',
-      iconColor: 'text-rose-600 dark:text-rose-400',
-      borderColor: 'border-rose-200 dark:border-rose-800',
       change: stats.todayCount,
       changeLabel: i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new today',
       link: '/incoming',
     },
   ];
 
+  const statusColors: Record<string, string> = {
+    draft: '#6b7280',
+    sent: 'var(--JKqx2, #1e293b)',
+    received: '#4ade80',
+    under_review: '#f59e0b',
+    replied: '#f31415',
+    closed: '#ef4444',
+  };
+
+  const activityCardThemes = [
+    { bg: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '#93c5fd', iconBg: '#bfdbfe', iconColor: '#1d4ed8' },
+    { bg: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)', border: '#67e8f9', iconBg: '#a5f3fc', iconColor: '#0e7490' },
+    { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', border: '#fdba74', iconBg: '#fed7aa', iconColor: '#c2410c' },
+  ];
+
+  const quickActionThemes = [
+    { bg: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)', border: '#a5b4fc', icon: '#4338ca', text: '#1f2937' },
+    { bg: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', border: '#c4b5fd', icon: '#6d28d9', text: '#1f2937' },
+    { bg: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)', border: '#67e8f9', icon: '#0e7490', text: '#1f2937' },
+    { bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', border: '#86efac', icon: '#15803d', text: '#1f2937' },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {t('dashboard.title')}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {i18n.language === 'ar' 
-              ? 'نظرة عامة على نظام المكاتبات والخطابات الرسمية' 
-              : 'Overview of the Correspondence Management System'}
-          </p>
+        <div className="flex items-center gap-4">
+          <img
+            src={logoImage}
+            alt={i18n.language === 'ar' ? 'شعار الشركة' : 'Company logo'}
+            className="h-12 w-12 rounded-full object-cover"
+            style={{ boxShadow: '0 0 0 2px rgba(15,23,42,0.12)' }}
+          />
+          <div>
+            <h1 className="text-3xl font-bold text-black">
+              {t('dashboard.title')}
+            </h1>
+            <p className="text-sm mt-0.5" style={{ color: goldDim }}>
+              الشركة القابضة للصناعات الغدائية
+            </p>
+          </div>
         </div>
-        <Button onClick={() => navigate('/reports')} variant="outline">
+        <button
+          onClick={() => navigate('/reports')}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200"
+          style={{
+            background: 'rgba(201,168,76,0.08)',
+            border: '1px solid rgba(201,168,76,0.2)',
+            color: gold,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(201,168,76,0.15)';
+            e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(201,168,76,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)';
+          }}
+        >
           {i18n.language === 'ar' ? 'عرض التقارير' : 'View Reports'}
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Main Statistics Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stat Cards Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card, index) => {
           const Icon = card.icon;
+          const theme = premiumCardThemes[index % premiumCardThemes.length];
           return (
-            <Card
+            <div
               key={index}
-              className={`${card.bgColor} ${card.borderColor} border-2 hover:shadow-lg transition-all duration-300 cursor-pointer group`}
+              className="group cursor-pointer rounded-2xl p-5 transition-all duration-300"
+              style={{
+                background: theme.bg,
+                border: `1px solid ${theme.border}`,
+              }}
               onClick={() => card.link && navigate(card.link)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = theme.iconColor;
+                e.currentTarget.style.boxShadow = `0 10px 24px color-mix(in srgb, ${theme.iconColor} 22%, transparent)`;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = theme.border;
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-foreground">{card.title}</CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${card.gradient} shadow-md group-hover:scale-110 transition-transform`}>
-                  <Icon className={`h-5 w-5 text-white`} />
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold" style={{ color: theme.titleColor }}>
+                  {card.title}
+                </span>
+                <div
+                  className="flex items-center justify-center rounded-lg p-2 transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: theme.iconBg }}
+                >
+                  <Icon className="h-5 w-5" style={{ color: theme.iconColor }} />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline justify-between">
-                  <div className="text-3xl font-bold text-foreground">{card.value}</div>
-                  {card.change && (
-                    <div className="text-right">
-                      <div className={`text-sm font-semibold ${card.iconColor}`}>
-                        {typeof card.change === 'number' ? card.change : card.change}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{card.changeLabel}</div>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <div className="text-3xl font-bold" style={{ color: theme.valueColor }}>
+                  {card.value}
+                </div>
+                {card.change !== undefined && (
+                  <div className="text-right">
+                    <div className="text-sm font-semibold" style={{ color: theme.metaColor }}>
+                      {card.change}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="text-[11px]" style={{ color: theme.metaSubColor }}>
+                      {card.changeLabel}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* Status Breakdown Section */}
+      {/* Status Breakdown & Activity */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        {/* Status Distribution */}
+        <div
+          className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6"
+          style={{ boxShadow: '0 8px 24px rgba(15,23,42,0.04)' }}
+        >
+          <div className="flex items-center gap-2 mb-5">
+            <div className="rounded-lg bg-blue-100 p-2">
+              <TrendingUp className="h-5 w-5 text-blue-700" />
+            </div>
+            <h3 className="text-base font-bold text-black">
               {i18n.language === 'ar' ? 'توزيع الحالات' : 'Status Distribution'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(stats.statusBreakdown || {}).map(([status, count]) => {
-                const percentage = stats.totalCorrespondences > 0
-                  ? ((count / stats.totalCorrespondences) * 100).toFixed(1)
-                  : '0';
-                const statusColors: Record<string, string> = {
-                  draft: 'bg-gray-500',
-                  sent: 'bg-blue-500',
-                  received: 'bg-green-500',
-                  under_review: 'bg-yellow-500',
-                  replied: 'bg-cyan-500',
-                  closed: 'bg-emerald-500',
-                };
-                return (
-                  <div key={status} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium capitalize">{status.replace('_', ' ')}</span>
-                      <span className="text-muted-foreground">{count} ({percentage}%)</span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                      <div
-                        className={`h-2.5 rounded-full ${statusColors[status] || 'bg-gray-500'} transition-all duration-500`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
+            </h3>
+          </div>
+          <div className="space-y-4">
+            {Object.entries(stats.statusBreakdown || {}).map(([status, count]) => {
+              const percentage = stats.totalCorrespondences > 0
+                ? ((count / stats.totalCorrespondences) * 100).toFixed(1)
+                : '0';
+              const color = statusColors[status] || gold;
+              return (
+                <div key={status} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold capitalize text-black">
+                      {status.replace('_', ' ')}
+                    </span>
+                    <span className="font-medium text-slate-700">
+                      {count} ({percentage}%)
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  <div
+                    className="w-full rounded-full h-2"
+                    style={{ background: '#e2e8f0' }}
+                  >
+                    <div
+                      className="h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%`, background: color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              {i18n.language === 'ar' ? 'النشاط الأخير' : 'Recent Activity'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900">
-                    <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{i18n.language === 'ar' ? 'اليوم' : 'Today'}</div>
-                    <div className="text-sm text-muted-foreground">{stats.todayCount} {i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}</div>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.todayCount}</div>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-green-100 dark:bg-green-900">
-                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{i18n.language === 'ar' ? 'هذا الأسبوع' : 'This Week'}</div>
-                    <div className="text-sm text-muted-foreground">{stats.thisWeekCount} {i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}</div>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.thisWeekCount}</div>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900">
-                    <Archive className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{i18n.language === 'ar' ? 'هذا الشهر' : 'This Month'}</div>
-                    <div className="text-sm text-muted-foreground">{stats.thisMonthCount} {i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}</div>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.thisMonthCount}</div>
-              </div>
+        {/* Recent Activity */}
+        <div
+          className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6"
+          style={{ boxShadow: '0 8px 24px rgba(15,23,42,0.04)' }}
+        >
+          <div className="flex items-center gap-2 mb-5">
+            <div className="rounded-lg bg-violet-100 p-2">
+              <Activity className="h-5 w-5 text-violet-700" />
             </div>
-          </CardContent>
-        </Card>
+            <h3 className="text-base font-bold text-black">
+              {i18n.language === 'ar' ? 'النشاط الأخير' : 'Recent Activity'}
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {[
+              {
+                icon: Calendar,
+                label: i18n.language === 'ar' ? 'اليوم' : 'Today',
+                sub: `${stats.todayCount} ${i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}`,
+                value: stats.todayCount,
+              },
+              {
+                icon: TrendingUp,
+                label: i18n.language === 'ar' ? 'هذا الأسبوع' : 'This Week',
+                sub: `${stats.thisWeekCount} ${i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}`,
+                value: stats.thisWeekCount,
+              },
+              {
+                icon: Archive,
+                label: i18n.language === 'ar' ? 'هذا الشهر' : 'This Month',
+                sub: `${stats.thisMonthCount} ${i18n.language === 'ar' ? 'مكاتبة جديدة' : 'new correspondences'}`,
+                value: stats.thisMonthCount,
+              },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              const theme = activityCardThemes[idx % activityCardThemes.length];
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between rounded-xl border p-3 transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    background: theme.bg,
+                    borderColor: theme.border,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex items-center justify-center rounded-lg p-2"
+                      style={{ background: theme.iconBg }}
+                    >
+                      <Icon className="h-4 w-4" style={{ color: theme.iconColor }} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-black">
+                        {item.label}
+                      </div>
+                      <div className="text-xs text-slate-700">
+                        {item.sub}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-black">
+                    {item.value}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
-      <Card className="border-2 border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            {i18n.language === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button
-              variant="outline"
-              className="h-20 flex-col gap-2 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 border-2"
-              onClick={() => navigate('/create')}
-            >
-              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium">{t('nav.create')}</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex-col gap-2 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 border-2"
-              onClick={() => navigate('/reviews')}
-            >
-              <Eye className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-medium">{t('nav.reviews')}</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex-col gap-2 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 border-2"
-              onClick={() => navigate('/reports')}
-            >
-              <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-              <span className="text-sm font-medium">{t('nav.reports')}</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex-col gap-2 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 border-2"
-              onClick={() => navigate('/entities')}
-            >
-              <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-medium">{t('nav.entities')}</span>
-            </Button>
+      <div
+        className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6"
+        style={{ boxShadow: '0 8px 24px rgba(15,23,42,0.04)' }}
+      >
+        <div className="flex items-center gap-2 mb-5">
+          <div className="rounded-lg bg-emerald-100 p-2">
+            <Activity className="h-5 w-5 text-emerald-700" />
           </div>
-        </CardContent>
-      </Card>
+          <h3 className="text-base font-bold text-black">
+            {i18n.language === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: FileText, label: t('nav.create'), path: '/create' },
+            { icon: Eye, label: t('nav.reviews'), path: '/reviews' },
+            { icon: TrendingUp, label: t('nav.reports'), path: '/reports' },
+            { icon: Building2, label: t('nav.entities'), path: '/entities' },
+          ].map((action, idx) => {
+            const Icon = action.icon;
+            const theme = quickActionThemes[idx % quickActionThemes.length];
+            return (
+              <button
+                key={idx}
+                onClick={() => navigate(action.path)}
+                className="flex h-20 flex-col items-center justify-center gap-2 rounded-xl border transition-all duration-200"
+                style={{
+                  background: theme.bg,
+                  borderColor: theme.border,
+                  color: theme.icon,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = theme.icon;
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `0 8px 18px color-mix(in srgb, ${theme.icon} 20%, transparent)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = theme.border;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <Icon className="h-6 w-6" />
+                <span className="text-sm font-semibold" style={{ color: theme.text }}>
+                  {action.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

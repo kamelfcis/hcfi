@@ -11,12 +11,11 @@ import { toast } from 'react-toastify';
 import { X } from 'lucide-react';
 
 const userSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  email: z.string().email('Invalid email'),
+  username: z.string().min(1, 'اسم المستخدم مطلوب'),
+  email: z.string().email('بريد إلكتروني غير صالح'),
   password: z.string().optional(),
-  full_name_ar: z.string().min(1, 'Arabic name is required'),
-  full_name_en: z.string().min(1, 'English name is required'),
-  role_id: z.number().int().positive('Role is required'),
+  full_name_ar: z.string().min(1, 'الاسم مطلوب'),
+  role_id: z.number().int().positive('الدور مطلوب'),
   is_active: z.boolean().optional(),
 });
 
@@ -26,7 +25,6 @@ interface UserModalProps {
     username: string;
     email: string;
     full_name_ar: string;
-    full_name_en: string;
     role_id: number;
     is_active: boolean;
   } | null;
@@ -82,7 +80,6 @@ export default function UserModal({ user, isOpen, onClose, onSuccess }: UserModa
         email: user.email,
         password: '',
         full_name_ar: user.full_name_ar,
-        full_name_en: user.full_name_en,
         role_id: user.role_id,
         is_active: user.is_active,
       });
@@ -92,7 +89,6 @@ export default function UserModal({ user, isOpen, onClose, onSuccess }: UserModa
         email: '',
         password: '',
         full_name_ar: '',
-        full_name_en: '',
         role_id: 3, // Default to employee
         is_active: true,
       });
@@ -109,19 +105,19 @@ export default function UserModal({ user, isOpen, onClose, onSuccess }: UserModa
       }
       if (user) {
         await api.put(`/users/${user.id}`, payload);
-        toast.success(i18n.language === 'ar' ? 'تم التحديث بنجاح' : 'Updated successfully');
+        toast.success('تم التحديث بنجاح');
       } else {
         if (!payload.password) {
-          toast.error('Password is required for new users');
+          toast.error('كلمة المرور مطلوبة للمستخدمين الجدد');
           return;
         }
         await api.post('/users', payload);
-        toast.success(i18n.language === 'ar' ? 'تم الإنشاء بنجاح' : 'Created successfully');
+        toast.success('تم الإنشاء بنجاح');
       }
       onSuccess();
       onClose();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to save user');
+      toast.error(error.response?.data?.error || 'فشل في حفظ المستخدم');
     }
   };
 
@@ -140,59 +136,52 @@ export default function UserModal({ user, isOpen, onClose, onSuccess }: UserModa
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Username</label>
+              <label className="mb-2 block text-sm font-medium">اسم المستخدم</label>
               <Input {...register('username')} />
               {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username.message}</p>}
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Email</label>
+              <label className="mb-2 block text-sm font-medium">البريد الإلكتروني</label>
               <Input type="email" {...register('email')} />
               {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Password {user && '(leave empty to keep current)'}</label>
+            <label className="mb-2 block text-sm font-medium">كلمة المرور {user && '(اتركه فارغاً للإبقاء على الحالي)'}</label>
             <Input type="password" {...register('password')} />
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium">Full Name (Arabic)</label>
-              <Input {...register('full_name_ar')} />
-              {errors.full_name_ar && <p className="mt-1 text-sm text-red-500">{errors.full_name_ar.message}</p>}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium">Full Name (English)</label>
-              <Input {...register('full_name_en')} />
-              {errors.full_name_en && <p className="mt-1 text-sm text-red-500">{errors.full_name_en.message}</p>}
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">الاسم الكامل</label>
+            <Input {...register('full_name_ar')} />
+            {errors.full_name_ar && <p className="mt-1 text-sm text-red-500">{errors.full_name_ar.message}</p>}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Role</label>
+              <label className="mb-2 block text-sm font-medium">الدور</label>
               <Select
                 {...register('role_id', { valueAsNumber: true })}
                 onChange={(e) => setValue('role_id', parseInt(e.target.value))}
               >
                 {roles.map((role) => (
                   <option key={role.id} value={role.id}>
-                    {i18n.language === 'ar' ? role.name_ar : role.name}
+                    {role.name_ar}
                   </option>
                 ))}
               </Select>
               {errors.role_id && <p className="mt-1 text-sm text-red-500">{errors.role_id.message}</p>}
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Status</label>
+              <label className="mb-2 block text-sm font-medium">الحالة</label>
               <Select
                 {...register('is_active', { valueAsBoolean: true })}
                 onChange={(e) => setValue('is_active', e.target.value === 'true')}
               >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+                <option value="true">نشط</option>
+                <option value="false">غير نشط</option>
               </Select>
             </div>
           </div>

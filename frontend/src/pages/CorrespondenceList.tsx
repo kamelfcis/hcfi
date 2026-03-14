@@ -8,25 +8,30 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Search, Filter, X, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'react-toastify';
 
 interface Correspondence {
   id: number;
   reference_number: string;
+  correspondence_number?: string;
   type: 'incoming' | 'outgoing';
+  correspondence_method?: 'hand' | 'computer';
   subject: string;
+  specialized_branch?: string;
+  responsible_person?: string;
   correspondence_date: string;
   current_status: string;
   review_status: string;
-  senderEntity: { id: number; name_ar: string; name_en: string };
-  receiverEntity: { id: number; name_ar: string; name_en: string };
+  storage_location?: string;
+  senderEntity: { id: number; name_ar: string };
+  receiverEntity: { id: number; name_ar: string };
 }
 
 interface Entity {
   id: number;
   name_ar: string;
-  name_en: string;
 }
 
 interface CorrespondenceListProps {
@@ -157,6 +162,20 @@ export default function CorrespondenceList({ defaultType }: CorrespondenceListPr
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleDeleteCorrespondence = async (correspondenceId: number) => {
+    if (!confirm(t('correspondence.confirmDelete'))) return;
+
+    try {
+      await api.delete(`/correspondences/${correspondenceId}`);
+      toast.success(t('correspondence.deleted'));
+      setCorrespondences((prev) => prev.filter((c) => c.id !== correspondenceId));
+      setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+      fetchCorrespondences();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to delete correspondence');
+    }
+  };
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -259,7 +278,7 @@ export default function CorrespondenceList({ defaultType }: CorrespondenceListPr
                 <option value="">{i18n.language === 'ar' ? 'الجهة المرسلة' : 'Sender Entity'}</option>
                 {entities.map((entity) => (
                   <option key={entity.id} value={entity.id.toString()}>
-                    {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
+                    {entity.name_ar}
                   </option>
                 ))}
               </Select>
@@ -271,7 +290,7 @@ export default function CorrespondenceList({ defaultType }: CorrespondenceListPr
                 <option value="">{i18n.language === 'ar' ? 'الجهة المستقبلة' : 'Receiver Entity'}</option>
                 {entities.map((entity) => (
                   <option key={entity.id} value={entity.id.toString()}>
-                    {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
+                    {entity.name_ar}
                   </option>
                 ))}
               </Select>
@@ -327,6 +346,11 @@ export default function CorrespondenceList({ defaultType }: CorrespondenceListPr
                         <span className="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-3 py-1 text-xs font-semibold text-white">
                           {corr.reference_number}
                         </span>
+                        {corr.correspondence_number && (
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {corr.correspondence_number}
+                          </span>
+                        )}
                         <span className={`rounded-full border px-2 py-1 text-xs ${getStatusColor(corr.current_status)}`}>
                           {t(`correspondence.${corr.current_status}`)}
                         </span>
@@ -337,15 +361,39 @@ export default function CorrespondenceList({ defaultType }: CorrespondenceListPr
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
-                        {i18n.language === 'ar'
-                          ? `${corr.senderEntity.name_ar} → ${corr.receiverEntity.name_ar}`
-                          : `${corr.senderEntity.name_en} → ${corr.receiverEntity.name_en}`}
+                        {`${corr.senderEntity.name_ar} → ${corr.receiverEntity.name_ar}`}
                       </p>
                       <div className="flex gap-4 text-xs text-muted-foreground">
                         <span>{format(new Date(corr.correspondence_date), 'yyyy-MM-dd')}</span>
                         <span>{t(`correspondence.${corr.type}`)}</span>
+                        {corr.correspondence_method && (
+                          <span>{t(`correspondence.${corr.correspondence_method}`)}</span>
+                        )}
+                        {corr.specialized_branch && (
+                          <span>{corr.specialized_branch}</span>
+                        )}
+                        {corr.responsible_person && (
+                          <span>{corr.responsible_person}</span>
+                        )}
+                        {corr.storage_location && (
+                          <span>مكان الحفظ: {corr.storage_location}</span>
+                        )}
                       </div>
                     </div>
+                    {hasPermission('correspondence:delete') && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCorrespondence(corr.id);
+                        }}
+                        title={t('correspondence.delete')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

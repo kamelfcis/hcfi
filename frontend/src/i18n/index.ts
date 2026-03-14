@@ -13,7 +13,14 @@ i18n
       ar: { translation: ar },
       en: { translation: en },
     },
+    detection: {
+      order: ['localStorage'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
+    },
+    supportedLngs: ['ar', 'en'],
     fallbackLng: 'ar',
+    lng: localStorage.getItem('i18nextLng') || 'ar',
     interpolation: {
       escapeValue: false,
     },

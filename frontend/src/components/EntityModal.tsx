@@ -12,9 +12,8 @@ import { toast } from 'react-toastify';
 import { X } from 'lucide-react';
 
 const entitySchema = z.object({
-  name_ar: z.string().min(1, 'Arabic name is required'),
-  name_en: z.string().min(1, 'English name is required'),
-  type: z.enum(['subsidiary', 'presidency', 'government', 'external']),
+  name_ar: z.string().min(1, 'اسم الجهة مطلوب'),
+  type: z.enum(['قيادة_عامة', 'فرع_رئيسي', 'قيادة_استراتيجية', 'هيئة_رئيسية', 'إدارة_رئيسية', 'جهة_تابعة']),
   contact_person: z.string().optional(),
   contact_email: z.string().email().optional().or(z.literal('')),
   contact_phone: z.string().optional(),
@@ -26,7 +25,6 @@ interface EntityModalProps {
   entity?: {
     id: number;
     name_ar: string;
-    name_en: string;
     type: string;
     contact_person?: string;
     contact_email?: string;
@@ -58,7 +56,6 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
     if (entity) {
       reset({
         name_ar: entity.name_ar,
-        name_en: entity.name_en,
         type: entity.type as any,
         contact_person: entity.contact_person || '',
         contact_email: entity.contact_email || '',
@@ -69,8 +66,7 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
     } else {
       reset({
         name_ar: '',
-        name_en: '',
-        type: 'subsidiary',
+        type: 'قيادة_عامة',
         contact_person: '',
         contact_email: '',
         contact_phone: '',
@@ -84,17 +80,22 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
 
   const onSubmit = async (data: z.infer<typeof entitySchema>) => {
     try {
+      const payload = {
+        ...data,
+        contact_email: data.contact_email?.trim() ? data.contact_email.trim() : undefined,
+      };
+
       if (entity) {
-        await api.put(`/entities/${entity.id}`, data);
-        toast.success(i18n.language === 'ar' ? 'تم التحديث بنجاح' : 'Updated successfully');
+        await api.put(`/entities/${entity.id}`, payload);
+        toast.success('تم التحديث بنجاح');
       } else {
-        await api.post('/entities', data);
-        toast.success(i18n.language === 'ar' ? 'تم الإنشاء بنجاح' : 'Created successfully');
+        await api.post('/entities', payload);
+        toast.success('تم الإنشاء بنجاح');
       }
       onSuccess();
       onClose();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to save entity');
+      toast.error(error.response?.data?.error || 'فشل في حفظ الجهة');
     }
   };
 
@@ -111,37 +112,32 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium">Name (Arabic)</label>
-              <Input {...register('name_ar')} />
-              {errors.name_ar && <p className="mt-1 text-sm text-red-500">{errors.name_ar.message}</p>}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium">Name (English)</label>
-              <Input {...register('name_en')} />
-              {errors.name_en && <p className="mt-1 text-sm text-red-500">{errors.name_en.message}</p>}
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">اسم الجهة</label>
+            <Input {...register('name_ar')} />
+            {errors.name_ar && <p className="mt-1 text-sm text-red-500">{errors.name_ar.message}</p>}
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Type</label>
+            <label className="mb-2 block text-sm font-medium">النوع</label>
             <Select {...register('type')} onChange={(e) => setValue('type', e.target.value as any)}>
-              <option value="subsidiary">Subsidiary</option>
-              <option value="presidency">Presidency</option>
-              <option value="government">Government</option>
-              <option value="external">External</option>
+              <option value="قيادة_عامة">قيادة عامة</option>
+              <option value="فرع_رئيسي">فرع رئيسي</option>
+              <option value="قيادة_استراتيجية">قيادة استراتيجية</option>
+              <option value="هيئة_رئيسية">هيئة رئيسية</option>
+              <option value="إدارة_رئيسية">إدارة رئيسية</option>
+              <option value="جهة_تابعة">جهة تابعة</option>
             </Select>
             {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Contact Person</label>
+              <label className="mb-2 block text-sm font-medium">المسؤول</label>
               <Input {...register('contact_person')} />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Contact Email</label>
+              <label className="mb-2 block text-sm font-medium">البريد الإلكتروني</label>
               <Input type="email" {...register('contact_email')} />
               {errors.contact_email && <p className="mt-1 text-sm text-red-500">{errors.contact_email.message}</p>}
             </div>
@@ -149,23 +145,23 @@ export default function EntityModal({ entity, isOpen, onClose, onSuccess }: Enti
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium">Contact Phone</label>
+              <label className="mb-2 block text-sm font-medium">رقم الهاتف</label>
               <Input {...register('contact_phone')} />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Status</label>
+              <label className="mb-2 block text-sm font-medium">الحالة</label>
               <Select
                 {...register('is_active', { valueAsBoolean: true })}
                 onChange={(e) => setValue('is_active', e.target.value === 'true')}
               >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+                <option value="true">نشط</option>
+                <option value="false">غير نشط</option>
               </Select>
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Address</label>
+            <label className="mb-2 block text-sm font-medium">العنوان</label>
             <Textarea {...register('address')} rows={3} />
           </div>
 

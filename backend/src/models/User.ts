@@ -7,7 +7,7 @@ interface UserAttributes {
   email: string;
   password_hash: string;
   full_name_ar: string;
-  full_name_en: string;
+  full_name_en?: string;
   role_id: number;
   is_active: boolean;
   last_login?: Date;
@@ -24,7 +24,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public email!: string;
   public password_hash!: string;
   public full_name_ar!: string;
-  public full_name_en!: string;
+  public full_name_en?: string;
   public role_id!: number;
   public is_active!: boolean;
   public last_login?: Date;
@@ -63,7 +63,7 @@ User.init(
     },
     full_name_en: {
       type: DataTypes.STRING(200),
-      allowNull: false,
+      allowNull: true,
     },
     role_id: {
       type: DataTypes.INTEGER,

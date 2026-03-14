@@ -37,6 +37,15 @@ export default function AttachmentViewer({
   const [wordContent, setWordContent] = useState<string | null>(null);
   const wordContainerRef = useRef<HTMLDivElement>(null);
 
+  // Cleanup blob URLs on unmount or when URL changes
+  useEffect(() => {
+    return () => {
+      if (fileUrl && fileUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(fileUrl);
+      }
+    };
+  }, [fileUrl]);
+
   useEffect(() => {
     if (isOpen) {
       // If we have an explicit attachment prop, find its index in the attachments array
@@ -50,6 +59,11 @@ export default function AttachmentViewer({
         setCurrentIndex(0);
       }
       
+      // Revoke previous blob URL
+      if (fileUrl && fileUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(fileUrl);
+      }
+      
       // Reset state when opening viewer or switching attachments
       setFileUrl(null);
       setWordContent(null);
@@ -57,7 +71,6 @@ export default function AttachmentViewer({
       setLoading(true);
       
       // Load file after state is updated
-      // Use the explicit attachment if provided, otherwise use the one from array
       const attachmentToLoad = attachment || (attachments.length > 0 && currentIndex >= 0 && currentIndex < attachments.length ? attachments[currentIndex] : null);
       if (attachmentToLoad) {
         setTimeout(() => {
@@ -118,6 +131,18 @@ export default function AttachmentViewer({
     }
   };
 
+  const getFilePath = (attachmentToLoad: Attachment) => {
+    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+    let filePath = attachmentToLoad.file_path;
+    if (!filePath.startsWith('http')) {
+      filePath = filePath.replace(/\\/g, '/');
+      filePath = filePath.replace(/^uploads[/\\]?/i, '');
+      filePath = filePath.replace(/^\/+|\/+$/g, '');
+      filePath = `${baseUrl}/uploads/${filePath}`;
+    }
+    return filePath;
+  };
+
   const loadFileForAttachment = async (attachmentToLoad: Attachment) => {
     if (!attachmentToLoad) {
       setError(true);
@@ -129,46 +154,35 @@ export default function AttachmentViewer({
     setError(false);
 
     try {
-      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
-      // Handle both relative and absolute paths
-      let filePath = attachmentToLoad.file_path;
-      if (!filePath.startsWith('http')) {
-        // Normalize backslashes to forward slashes first
-        filePath = filePath.replace(/\\/g, '/');
-        
-        // Remove "uploads/" or "uploads\" prefix if it exists (handle both slashes)
-        filePath = filePath.replace(/^uploads[/\\]?/i, '');
-        
-        // Remove leading/trailing slashes
-        filePath = filePath.replace(/^\/+|\/+$/g, '');
-        filePath = `${baseUrl}/uploads/${filePath}`;
-      }
+      const filePath = getFilePath(attachmentToLoad);
       
-      // For images and PDFs, we can use direct URL
+      // For images and PDFs, fetch as blob to create blob URL (avoids CORS/iframe blocking)
       if (attachmentToLoad.mime_type.startsWith('image/') || attachmentToLoad.mime_type === 'application/pdf') {
-        setFileUrl(filePath);
-        setLoading(false);
+        try {
+          const response = await fetch(filePath, { credentials: 'include' });
+          if (!response.ok) throw new Error('Failed to fetch file');
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          setFileUrl(blobUrl);
+          setLoading(false);
+        } catch {
+          // Fallback to direct URL if blob fetch fails
+          setFileUrl(filePath);
+          setLoading(false);
+        }
       } else if (attachmentToLoad.mime_type.includes('word') || attachmentToLoad.mime_type.includes('document')) {
-        // For Word docs, fetch and render using docx-preview
-        // Check if it's .docx (new format) or .doc (old format)
         const isDocx = attachmentToLoad.original_name.toLowerCase().endsWith('.docx') ||
                       attachmentToLoad.mime_type.includes('openxml');
         
         if (isDocx) {
           try {
-            const response = await fetch(filePath);
-            if (!response.ok) {
-              throw new Error('Failed to fetch Word document');
-            }
+            const response = await fetch(filePath, { credentials: 'include' });
+            if (!response.ok) throw new Error('Failed to fetch Word document');
             const arrayBuffer = await response.arrayBuffer();
             
-            // Wait a bit for the container to be ready if needed
             const renderDoc = async () => {
               if (wordContainerRef.current) {
-                // Clear previous content
                 wordContainerRef.current.innerHTML = '';
-                
-                // Render Word document
                 await renderAsync(arrayBuffer, wordContainerRef.current, null, {
                   className: 'docx-wrapper',
                   inWrapper: true,
@@ -181,7 +195,6 @@ export default function AttachmentViewer({
                 setWordContent('rendered');
                 setLoading(false);
               } else {
-                // Retry after a short delay
                 setTimeout(renderDoc, 100);
               }
             };
@@ -193,9 +206,8 @@ export default function AttachmentViewer({
             setLoading(false);
           }
         } else {
-          // For .doc files (old format), try Office Online viewer or show download message
-          const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(filePath)}`;
-          setFileUrl(officeViewerUrl);
+          // For .doc files, show download message (Office Online won't work with localhost)
+          setError(true);
           setLoading(false);
         }
       } else {
@@ -304,7 +316,6 @@ export default function AttachmentViewer({
               className="h-full w-full border-0 bg-white"
               title={displayAttachment.original_name}
               allow="fullscreen"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
               style={{ border: 'none' }}
             />
           ) : isWord ? (

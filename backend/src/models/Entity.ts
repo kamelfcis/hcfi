@@ -4,8 +4,8 @@ import sequelize from '../config/database';
 interface EntityAttributes {
   id: number;
   name_ar: string;
-  name_en: string;
-  type: 'subsidiary' | 'presidency' | 'government' | 'external';
+  name_en?: string;
+  type: 'قيادة_عامة' | 'فرع_رئيسي' | 'قيادة_استراتيجية' | 'هيئة_رئيسية' | 'إدارة_رئيسية' | 'جهة_تابعة';
   contact_person?: string;
   contact_email?: string;
   contact_phone?: string;
@@ -21,8 +21,8 @@ interface EntityCreationAttributes extends Partial<EntityAttributes> {}
 class Entity extends Model<EntityAttributes, EntityCreationAttributes> implements EntityAttributes {
   public id!: number;
   public name_ar!: string;
-  public name_en!: string;
-  public type!: 'subsidiary' | 'presidency' | 'government' | 'external';
+  public name_en?: string;
+  public type!: 'قيادة_عامة' | 'فرع_رئيسي' | 'قيادة_استراتيجية' | 'هيئة_رئيسية' | 'إدارة_رئيسية' | 'جهة_تابعة';
   public contact_person?: string;
   public contact_email?: string;
   public contact_phone?: string;
@@ -46,10 +46,10 @@ Entity.init(
     },
     name_en: {
       type: DataTypes.STRING(200),
-      allowNull: false,
+      allowNull: true,
     },
     type: {
-      type: DataTypes.ENUM('subsidiary', 'presidency', 'government', 'external'),
+      type: DataTypes.ENUM('قيادة_عامة', 'فرع_رئيسي', 'قيادة_استراتيجية', 'هيئة_رئيسية', 'إدارة_رئيسية', 'جهة_تابعة'),
       allowNull: false,
     },
     contact_person: {
@@ -57,8 +57,16 @@ Entity.init(
     },
     contact_email: {
       type: DataTypes.STRING(100),
+      allowNull: true,
       validate: {
         isEmail: true,
+      },
+      set(value: string | undefined) {
+        if (typeof value === 'string' && value.trim() === '') {
+          this.setDataValue('contact_email', undefined);
+          return;
+        }
+        this.setDataValue('contact_email', value);
       },
     },
     contact_phone: {

@@ -97,6 +97,16 @@ function App() {
           }
         />
         <Route
+          path="/correspondences"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <CorrespondenceList />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/incoming"
           element={
             <ProtectedRoute>

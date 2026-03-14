@@ -105,7 +105,7 @@ export default function Settings() {
                 {i18n.language === 'ar' ? 'الاسم الكامل' : 'Full Name'}
               </Label>
               <p className="font-medium">
-                {i18n.language === 'ar' ? user?.full_name_ar : user?.full_name_en}
+                {user?.full_name_ar}
               </p>
             </div>
             <div>

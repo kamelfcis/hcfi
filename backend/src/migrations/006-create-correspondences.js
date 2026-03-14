@@ -13,9 +13,15 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      correspondence_number: {
+        type: Sequelize.STRING(100),
+      },
       type: {
         type: Sequelize.ENUM('incoming', 'outgoing'),
         allowNull: false,
+      },
+      correspondence_method: {
+        type: Sequelize.ENUM('hand', 'computer'),
       },
       subject: {
         type: Sequelize.STRING(500),
@@ -24,6 +30,12 @@ module.exports = {
       description: {
         type: Sequelize.TEXT,
         allowNull: false,
+      },
+      specialized_branch: {
+        type: Sequelize.STRING(255),
+      },
+      responsible_person: {
+        type: Sequelize.STRING(255),
       },
       sender_entity_id: {
         type: Sequelize.INTEGER,
@@ -87,6 +99,7 @@ module.exports = {
     });
 
     await queryInterface.addIndex('correspondences', ['reference_number'], { unique: true });
+    await queryInterface.addIndex('correspondences', ['correspondence_number']);
     await queryInterface.addIndex('correspondences', ['type']);
     await queryInterface.addIndex('correspondences', ['sender_entity_id']);
     await queryInterface.addIndex('correspondences', ['receiver_entity_id']);

@@ -6,6 +6,7 @@ import {
   update,
   remove,
   addReply,
+  deleteReply,
   updateStatus,
   review,
 } from '../controllers/correspondenceController';
@@ -19,6 +20,7 @@ router.post('/', authenticate, requirePermission('correspondence:create'), creat
 router.put('/:id', authenticate, requirePermission('correspondence:update'), update);
 router.delete('/:id', authenticate, requirePermission('correspondence:delete'), remove);
 router.post('/:id/reply', authenticate, requirePermission('correspondence:update'), addReply);
+router.delete('/:correspondenceId/reply/:replyId', authenticate, requirePermission('correspondence:update'), deleteReply);
 router.patch('/:id/status', authenticate, requirePermission('correspondence:update'), updateStatus);
 router.post('/:id/review', authenticate, requirePermission('correspondence:review'), review);
 

@@ -81,7 +81,7 @@ export const getAuditLogs = async (req: AuthRequest, res: Response, next: NextFu
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'username', 'full_name_ar', 'full_name_en', 'email'],
+          attributes: ['id', 'username', 'full_name_ar', 'email'],
         },
       ],
       limit: parseInt(limit as string),
@@ -130,7 +130,7 @@ export const getAuditLogById = async (req: AuthRequest, res: Response, next: Nex
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'username', 'full_name_ar', 'full_name_en', 'email'],
+          attributes: ['id', 'username', 'full_name_ar', 'email'],
         },
       ],
     });

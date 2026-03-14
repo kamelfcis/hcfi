@@ -152,8 +152,15 @@ export const downloadAttachment = async (req: AuthRequest, res: Response, next: 
     const encodedFilename = encodeURIComponent(attachment.original_name);
     res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
     res.setHeader('Content-Type', attachment.mime_type);
-    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'http://localhost:5173');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    const requestOrigin = req.headers.origin;
+    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174,http://localhost:5175')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.sendFile(filePath);
   } catch (error) {

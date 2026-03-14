@@ -14,7 +14,6 @@ import EntityModal from '@/components/EntityModal';
 interface Entity {
   id: number;
   name_ar: string;
-  name_en: string;
   type: string;
   contact_person?: string;
   contact_email?: string;
@@ -132,11 +131,13 @@ export default function Entities() {
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
             >
-              <option value="">{i18n.language === 'ar' ? 'جميع الأنواع' : 'All Types'}</option>
-              <option value="subsidiary">{i18n.language === 'ar' ? 'شركة تابعة' : 'Subsidiary'}</option>
-              <option value="presidency">{i18n.language === 'ar' ? 'رئاسة' : 'Presidency'}</option>
-              <option value="government">{i18n.language === 'ar' ? 'حكومي' : 'Government'}</option>
-              <option value="external">{i18n.language === 'ar' ? 'خارجي' : 'External'}</option>
+              <option value="">جميع الأنواع</option>
+              <option value="قيادة_عامة">قيادة عامة</option>
+              <option value="فرع_رئيسي">فرع رئيسي</option>
+              <option value="قيادة_استراتيجية">قيادة استراتيجية</option>
+              <option value="هيئة_رئيسية">هيئة رئيسية</option>
+              <option value="إدارة_رئيسية">إدارة رئيسية</option>
+              <option value="جهة_تابعة">جهة تابعة</option>
             </Select>
             <Select
               value={filters.is_active}
@@ -176,10 +177,10 @@ export default function Entities() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold">
-                        {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
+                        {entity.name_ar}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {i18n.language === 'ar' ? 'النوع:' : 'Type:'} {entity.type}
+                        النوع: {entity.type?.replace('_', ' ')}
                       </p>
                       {entity.contact_email && (
                         <p className="mt-1 text-sm text-muted-foreground">{entity.contact_email}</p>

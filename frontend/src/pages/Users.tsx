@@ -16,7 +16,6 @@ interface User {
   username: string;
   email: string;
   full_name_ar: string;
-  full_name_en: string;
   role: { id: number; name: string; name_ar: string };
   is_active: boolean;
 }
@@ -197,11 +196,11 @@ export default function Users() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold">
-                        {i18n.language === 'ar' ? user.full_name_ar : user.full_name_en}
+                        {user.full_name_ar}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground">{user.username} - {user.email}</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {i18n.language === 'ar' ? user.role.name_ar : user.role.name}
+                        {user.role.name_ar}
                       </p>
                       <span
                         className={`mt-2 inline-block rounded-full px-2 py-1 text-xs ${

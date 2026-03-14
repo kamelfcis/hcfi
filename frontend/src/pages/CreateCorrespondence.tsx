@@ -15,12 +15,17 @@ import { ArrowLeft, Upload, X } from 'lucide-react';
 
 const correspondenceSchema = z.object({
   type: z.enum(['incoming', 'outgoing']),
+  correspondence_number: z.string().optional(),
+  correspondence_method: z.enum(['hand', 'computer']).optional(),
   subject: z.string().min(1, 'Subject is required'),
   description: z.string().min(1, 'Description is required'),
+  specialized_branch: z.string().optional(),
+  responsible_person: z.string().optional(),
   sender_entity_id: z.number().int().positive('Sender entity is required'),
   receiver_entity_id: z.number().int().positive('Receiver entity is required'),
   correspondence_date: z.string().min(1, 'Date is required'),
   current_status: z.enum(['draft', 'sent', 'received', 'under_review', 'replied', 'closed']).optional(),
+  storage_location: z.string().optional(),
 });
 
 type CorrespondenceFormData = z.infer<typeof correspondenceSchema>;
@@ -28,7 +33,6 @@ type CorrespondenceFormData = z.infer<typeof correspondenceSchema>;
 interface Entity {
   id: number;
   name_ar: string;
-  name_en: string;
 }
 
 export default function CreateCorrespondence() {
@@ -51,8 +55,13 @@ export default function CreateCorrespondence() {
       type: 'incoming',
       correspondence_date: new Date().toISOString().split('T')[0],
       current_status: 'draft',
+      correspondence_method: 'computer',
     },
   });
+  const senderEntityId = watch('sender_entity_id');
+  const receiverEntityId = watch('receiver_entity_id');
+  const [senderSearch, setSenderSearch] = useState('');
+  const [receiverSearch, setReceiverSearch] = useState('');
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -71,6 +80,16 @@ export default function CreateCorrespondence() {
     };
     fetchEntities();
   }, []);
+
+  useEffect(() => {
+    const selectedSender = entities.find((entity) => entity.id === senderEntityId);
+    setSenderSearch(selectedSender?.name_ar || '');
+  }, [senderEntityId, entities]);
+
+  useEffect(() => {
+    const selectedReceiver = entities.find((entity) => entity.id === receiverEntityId);
+    setReceiverSearch(selectedReceiver?.name_ar || '');
+  }, [receiverEntityId, entities]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -154,17 +173,27 @@ export default function CreateCorrespondence() {
 
               <div>
                 <label className="mb-2 block text-sm font-medium">{t('correspondence.sender')}</label>
-                <Select
-                  {...register('sender_entity_id', { valueAsNumber: true })}
+                <input type="hidden" {...register('sender_entity_id', { valueAsNumber: true })} />
+                <Input
+                  list="sender-entities-list"
                   disabled={entitiesLoading}
-                >
-                  <option value="">{t('correspondence.sender')}</option>
+                  value={senderSearch}
+                  placeholder={t('correspondence.sender')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSenderSearch(value);
+                    const selected = entities.find((entity) => entity.name_ar === value);
+                    setValue('sender_entity_id', selected ? selected.id : (undefined as unknown as number), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+                <datalist id="sender-entities-list">
                   {entities.map((entity) => (
-                    <option key={entity.id} value={entity.id}>
-                      {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
-                    </option>
+                    <option key={entity.id} value={entity.name_ar} />
                   ))}
-                </Select>
+                </datalist>
                 {errors.sender_entity_id && (
                   <p className="mt-1 text-sm text-red-500">{errors.sender_entity_id.message}</p>
                 )}
@@ -172,20 +201,59 @@ export default function CreateCorrespondence() {
 
               <div>
                 <label className="mb-2 block text-sm font-medium">{t('correspondence.receiver')}</label>
-                <Select
-                  {...register('receiver_entity_id', { valueAsNumber: true })}
+                <input type="hidden" {...register('receiver_entity_id', { valueAsNumber: true })} />
+                <Input
+                  list="receiver-entities-list"
                   disabled={entitiesLoading}
-                >
-                  <option value="">{t('correspondence.receiver')}</option>
+                  value={receiverSearch}
+                  placeholder={t('correspondence.receiver')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setReceiverSearch(value);
+                    const selected = entities.find((entity) => entity.name_ar === value);
+                    setValue('receiver_entity_id', selected ? selected.id : (undefined as unknown as number), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+                <datalist id="receiver-entities-list">
                   {entities.map((entity) => (
-                    <option key={entity.id} value={entity.id}>
-                      {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
-                    </option>
+                    <option key={entity.id} value={entity.name_ar} />
                   ))}
-                </Select>
+                </datalist>
                 {errors.receiver_entity_id && (
                   <p className="mt-1 text-sm text-red-500">{errors.receiver_entity_id.message}</p>
                 )}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">{t('correspondence.correspondenceNumber')}</label>
+              <Input {...register('correspondence_number')} />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.specializedBranch')}</label>
+                <Input {...register('specialized_branch')} />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.responsiblePerson')}</label>
+                <Input {...register('responsible_person')} />
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.correspondenceMethod')}</label>
+                <Select
+                  {...register('correspondence_method')}
+                  onChange={(e) => setValue('correspondence_method', e.target.value as 'hand' | 'computer')}
+                >
+                  <option value="hand">{t('correspondence.hand')}</option>
+                  <option value="computer">{t('correspondence.computer')}</option>
+                </Select>
               </div>
             </div>
 
@@ -203,17 +271,34 @@ export default function CreateCorrespondence() {
               )}
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium">{t('correspondence.status')}</label>
-              <Select
-                {...register('current_status')}
-                onChange={(e) => setValue('current_status', e.target.value as any)}
-              >
-                <option value="draft">{t('correspondence.draft')}</option>
-                <option value="sent">{t('correspondence.sent')}</option>
-                <option value="received">{t('correspondence.received')}</option>
-                <option value="under_review">{t('correspondence.underReview')}</option>
-              </Select>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.status')}</label>
+                <Select
+                  {...register('current_status')}
+                  onChange={(e) => setValue('current_status', e.target.value as any)}
+                >
+                  <option value="draft">{t('correspondence.draft')}</option>
+                  <option value="sent">{t('correspondence.sent')}</option>
+                  <option value="received">{t('correspondence.received')}</option>
+                  <option value="under_review">{t('correspondence.underReview')}</option>
+                </Select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">مكان الحفظ</label>
+                <Input
+                  list="storage-location-entities-list"
+                  {...register('storage_location')}
+                  placeholder="مكان الحفظ"
+                  disabled={entitiesLoading}
+                />
+                <datalist id="storage-location-entities-list">
+                  {entities.map((entity) => (
+                    <option key={entity.id} value={entity.name_ar} />
+                  ))}
+                </datalist>
+              </div>
             </div>
 
             <div>

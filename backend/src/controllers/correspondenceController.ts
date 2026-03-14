@@ -136,7 +136,7 @@ export const getAll = async (req: AuthRequest, res: Response, next: NextFunction
       include: [
         { model: Entity, as: 'senderEntity' },
         { model: Entity, as: 'receiverEntity' },
-        { model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar', 'full_name_en'] },
+        { model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar'] },
       ],
       limit: parseInt(limit as string),
       offset,
@@ -163,13 +163,13 @@ export const getById = async (req: AuthRequest, res: Response, next: NextFunctio
       include: [
         { model: Entity, as: 'senderEntity' },
         { model: Entity, as: 'receiverEntity' },
-        { model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar', 'full_name_en'] },
+        { model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar'] },
         { model: Attachment, as: 'attachments' },
-        { model: StatusHistory, as: 'statusHistory', include: [{ model: User, as: 'changedBy', attributes: ['id', 'username', 'full_name_ar', 'full_name_en'] }] },
+        { model: StatusHistory, as: 'statusHistory', include: [{ model: User, as: 'changedBy', attributes: ['id', 'username', 'full_name_ar'] }] },
         {
           model: CorrespondenceReply,
           as: 'replies',
-          include: [{ model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar', 'full_name_en'] }],
+          include: [{ model: User, as: 'creator', attributes: ['id', 'username', 'full_name_ar'] }],
         },
       ],
     });
@@ -223,6 +223,8 @@ export const getById = async (req: AuthRequest, res: Response, next: NextFunctio
  *               current_status:
  *                 type: string
  *                 enum: [draft, sent, received, under_review, replied, closed]
+ *               storage_location:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Correspondence created successfully
@@ -302,6 +304,8 @@ export const create = async (req: AuthRequest, res: Response, next: NextFunction
  *               review_status:
  *                 type: string
  *                 enum: [reviewed, not_reviewed]
+ *               storage_location:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Correspondence updated successfully
@@ -452,6 +456,56 @@ export const addReply = async (req: AuthRequest, res: Response, next: NextFuncti
     });
 
     res.status(201).json(created);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /api/v1/correspondences/{correspondenceId}/reply/{replyId}:
+ *   delete:
+ *     summary: Delete a reply from a correspondence
+ *     tags: [Correspondences]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: correspondenceId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: replyId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Reply deleted successfully
+ *       404:
+ *         description: Reply not found
+ */
+export const deleteReply = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { correspondenceId, replyId } = req.params;
+
+    const reply = await CorrespondenceReply.findOne({
+      where: {
+        id: replyId,
+        correspondence_id: correspondenceId,
+      },
+    });
+
+    if (!reply) {
+      throw new AppError('Reply not found', 404);
+    }
+
+    await reply.destroy();
+
+    await logAudit(req, 'delete', 'reply', reply.id);
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

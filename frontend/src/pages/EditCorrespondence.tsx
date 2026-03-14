@@ -16,13 +16,18 @@ import { ArrowLeft, Upload, X } from 'lucide-react';
 
 const correspondenceSchema = z.object({
   type: z.enum(['incoming', 'outgoing']),
+  correspondence_number: z.string().optional(),
+  correspondence_method: z.enum(['hand', 'computer']).optional(),
   subject: z.string().min(1, 'Subject is required'),
   description: z.string().min(1, 'Description is required'),
+  specialized_branch: z.string().optional(),
+  responsible_person: z.string().optional(),
   sender_entity_id: z.number().int().positive('Sender entity is required'),
   receiver_entity_id: z.number().int().positive('Receiver entity is required'),
   correspondence_date: z.string().min(1, 'Date is required'),
   current_status: z.enum(['draft', 'sent', 'received', 'under_review', 'replied', 'closed']).optional(),
   review_status: z.enum(['reviewed', 'not_reviewed']).optional(),
+  storage_location: z.string().optional(),
 });
 
 type CorrespondenceFormData = z.infer<typeof correspondenceSchema>;
@@ -30,7 +35,6 @@ type CorrespondenceFormData = z.infer<typeof correspondenceSchema>;
 interface Entity {
   id: number;
   name_ar: string;
-  name_en: string;
 }
 
 export default function EditCorrespondence() {
@@ -71,13 +75,18 @@ export default function EditCorrespondence() {
           const corr = correspondenceRes.data;
           reset({
             type: corr.type,
+            correspondence_number: corr.correspondence_number || '',
+            correspondence_method: corr.correspondence_method || 'computer',
             subject: corr.subject,
             description: corr.description,
+            specialized_branch: corr.specialized_branch || '',
+            responsible_person: corr.responsible_person || '',
             sender_entity_id: corr.sender_entity_id,
             receiver_entity_id: corr.receiver_entity_id,
             correspondence_date: new Date(corr.correspondence_date).toISOString().split('T')[0],
             current_status: corr.current_status,
             review_status: corr.review_status,
+            storage_location: corr.storage_location || '',
           });
         }
       } catch (error) {
@@ -193,7 +202,7 @@ export default function EditCorrespondence() {
                   <option value="">{t('correspondence.sender')}</option>
                   {entities.map((entity) => (
                     <option key={entity.id} value={entity.id}>
-                      {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
+                      {entity.name_ar}
                     </option>
                   ))}
                 </Select>
@@ -211,13 +220,42 @@ export default function EditCorrespondence() {
                   <option value="">{t('correspondence.receiver')}</option>
                   {entities.map((entity) => (
                     <option key={entity.id} value={entity.id}>
-                      {i18n.language === 'ar' ? entity.name_ar : entity.name_en}
+                      {entity.name_ar}
                     </option>
                   ))}
                 </Select>
                 {errors.receiver_entity_id && (
                   <p className="mt-1 text-sm text-red-500">{errors.receiver_entity_id.message}</p>
                 )}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">{t('correspondence.correspondenceNumber')}</label>
+              <Input {...register('correspondence_number')} />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.specializedBranch')}</label>
+                <Input {...register('specialized_branch')} />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.responsiblePerson')}</label>
+                <Input {...register('responsible_person')} />
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">{t('correspondence.correspondenceMethod')}</label>
+                <Select
+                  {...register('correspondence_method')}
+                  onChange={(e) => setValue('correspondence_method', e.target.value as 'hand' | 'computer')}
+                >
+                  <option value="hand">{t('correspondence.hand')}</option>
+                  <option value="computer">{t('correspondence.computer')}</option>
+                </Select>
               </div>
             </div>
 
@@ -261,6 +299,11 @@ export default function EditCorrespondence() {
                   <option value="reviewed">{t('correspondence.reviewed')}</option>
                 </Select>
               </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">مكان الحفظ</label>
+              <Input {...register('storage_location')} placeholder="مكان الحفظ" />
             </div>
 
             <div>

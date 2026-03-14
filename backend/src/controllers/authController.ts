@@ -53,8 +53,6 @@ import { logAudit } from '../utils/audit';
  *                       type: string
  *                     full_name_ar:
  *                       type: string
- *                     full_name_en:
- *                       type: string
  *                     role:
  *                       type: string
  *       401:
@@ -94,7 +92,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         username: user.username,
         email: user.email,
         full_name_ar: user.full_name_ar,
-        full_name_en: user.full_name_en,
         role: userWithRole.role.name,
       },
     });
@@ -174,8 +171,6 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
  *                   type: string
  *                 full_name_ar:
  *                   type: string
- *                 full_name_en:
- *                   type: string
  *                 role:
  *                   type: string
  *       401:
@@ -199,7 +194,6 @@ export const me = async (req: AuthRequest, res: Response, next: NextFunction) =>
       username: user.username,
       email: user.email,
       full_name_ar: user.full_name_ar,
-      full_name_en: user.full_name_en,
       role: userWithRole.role.name,
     });
   } catch (error) {
